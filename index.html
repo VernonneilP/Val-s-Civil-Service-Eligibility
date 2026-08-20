@@ -144,9 +144,15 @@
             </p>
 
             <div class="mt-6 flex flex-wrap justify-between items-center gap-3 pt-4 border-t border-pink-100 text-xs text-slate-500">
-                <div class="flex items-center gap-2" id="sync-status-badge">
-                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
-                    <span class="font-semibold text-emerald-700" id="sync-status-text">Cloud Sync Active</span>
+                <div class="flex items-center gap-2 flex-wrap" id="sync-status-container">
+                    <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/80 border border-pink-200 shadow-xs" id="sync-status-badge">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" id="sync-dot"></span>
+                        <span class="font-semibold text-emerald-700" id="sync-status-text">Cloud Sync Active</span>
+                    </div>
+                    <button onclick="manualSync()" id="btn-manual-sync" title="Sync with Cloud" class="px-3 py-1.5 rounded-full bg-pink-100 text-tulip-700 hover:bg-pink-200 font-bold transition active:scale-95 flex items-center gap-1.5 shadow-xs border border-pink-200">
+                        <i class="fa-solid fa-arrows-rotate text-tulip-600" id="sync-icon"></i>
+                        <span>Sync Now</span>
+                    </button>
                 </div>
                 <button onclick="triggerHeartShower()" class="px-4 py-2 rounded-full bg-gradient-to-r from-pink-500 to-tulip-600 text-white font-semibold shadow-md hover:shadow-lg transition-all active:scale-95 flex items-center gap-2 text-xs">
                     <i class="fa-solid fa-heart"></i> Send Val a Heart Shower!
@@ -311,7 +317,7 @@
         // APP CONFIG & INITIALIZATION
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'leila-hge-guide-val';
         
-        // PASTE YOUR FREE NPOINT BIN URL HERE (e.g., 'https://api.npoint.io/abcdef12345'):
+        // PASTE YOUR FREE NPOINT BIN URL HERE:
         const NPOINT_URL = 'https://api.npoint.io/1f99c0f44996b5459053';
 
         let db = null;
@@ -507,7 +513,7 @@
         }
 
         async function setupPublicCloudSync() {
-            if (!NPOINT_URL || NPOINT_URL === 'https://api.npoint.io/1f99c0f44996b5459053') {
+            if (!NPOINT_URL || NPOINT_URL === 'PASTE_YOUR_NPOINT_URL_HERE') {
                 updateSyncBadge('Local Auto-Save', 'amber');
             } else {
                 updateSyncBadge('Cloud Sync Active', 'emerald');
@@ -518,7 +524,7 @@
         }
 
         async function fetchPublicCloudData() {
-            if (!NPOINT_URL || NPOINT_URL === 'https://api.npoint.io/1f99c0f44996b5459053') {
+            if (!NPOINT_URL || NPOINT_URL === 'PASTE_YOUR_NPOINT_URL_HERE') {
                 updateSyncBadge('Local Auto-Save', 'amber');
                 return;
             }
@@ -551,15 +557,37 @@
         function updateSyncBadge(text, color) {
             const badgeText = document.getElementById('sync-status-text');
             const badgeBox = document.getElementById('sync-status-badge');
+            const syncDot = document.getElementById('sync-dot');
             if (badgeText && badgeBox) {
                 badgeText.textContent = text;
                 if (color === 'emerald') {
-                    badgeBox.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span><span class="font-semibold text-emerald-700">${text}</span>`;
+                    if (syncDot) syncDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping";
+                    badgeText.className = "font-semibold text-emerald-700";
                 } else if (color === 'amber') {
-                    badgeBox.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span><span class="font-semibold text-amber-700">${text}</span>`;
+                    if (syncDot) syncDot.className = "w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse";
+                    badgeText.className = "font-semibold text-amber-700";
+                } else if (color === 'blue') {
+                    if (syncDot) syncDot.className = "w-2.5 h-2.5 rounded-full bg-blue-500 animate-ping";
+                    badgeText.className = "font-semibold text-blue-700";
                 }
             }
         }
+
+        window.manualSync = async function() {
+            const icon = document.getElementById('sync-icon');
+            if (icon) icon.classList.add('animate-spin');
+            updateSyncBadge('Syncing Cloud...', 'blue');
+            
+            await fetchPublicCloudData();
+
+            setTimeout(() => {
+                if (icon) icon.classList.remove('animate-spin');
+                updateSyncBadge('Synced Just Now! ✨', 'emerald');
+                setTimeout(() => {
+                    updateSyncBadge('Cloud Sync Active', 'emerald');
+                }, 2500);
+            }, 500);
+        };
 
         window.toggleCheck = async function(id) {
             const isChecked = !checkedState[id];
@@ -588,7 +616,7 @@
                 } catch (e) {
                     updateSyncBadge('Saved Locally', 'amber');
                 }
-            } else if (NPOINT_URL && NPOINT_URL !== 'https://api.npoint.io/1f99c0f44996b5459053') {
+            } else if (NPOINT_URL && NPOINT_URL !== 'PASTE_YOUR_NPOINT_URL_HERE') {
                 updateSyncBadge('Saving to Cloud...', 'amber');
                 try {
                     await fetch(NPOINT_URL, {
@@ -697,7 +725,7 @@
                         created: serverTimestamp()
                     });
                 } catch(e) { console.error(e); }
-            } else if (NPOINT_URL && NPOINT_URL !== 'https://api.npoint.io/1f99c0f44996b5459053') {
+            } else if (NPOINT_URL && NPOINT_URL !== 'PASTE_YOUR_NPOINT_URL_HERE') {
                 try {
                     await fetch(NPOINT_URL, {
                         method: 'POST',
