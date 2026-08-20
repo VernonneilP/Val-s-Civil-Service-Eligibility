@@ -149,7 +149,7 @@
                         <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" id="sync-dot"></span>
                         <span class="font-semibold text-emerald-700" id="sync-status-text">Cloud Sync Active</span>
                     </div>
-                    <button onclick="manualSync()" id="btn-manual-sync" title="Sync with Cloud" class="px-3 py-1.5 rounded-full bg-pink-100 text-tulip-700 hover:bg-pink-200 font-bold transition active:scale-95 flex items-center gap-1.5 shadow-xs border border-pink-200">
+                    <button onclick="manualSync()" id="btn-manual-sync" title="Sync with GetPantry Cloud" class="px-3 py-1.5 rounded-full bg-pink-100 text-tulip-700 hover:bg-pink-200 font-bold transition active:scale-95 flex items-center gap-1.5 shadow-xs border border-pink-200">
                         <i class="fa-solid fa-arrows-rotate text-tulip-600" id="sync-icon"></i>
                         <span>Sync Now</span>
                     </button>
@@ -310,21 +310,17 @@
     </div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, onSnapshot, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        // =========================================================================
+        // GETPANTRY CLOUD CONFIGURATION
+        // =========================================================================
+        const PANTRY_ID = '3f23059e-8411-4925-90b5-2bd8cfe19f60';
+        const BASKET_NAME = 'leila_roadmap';
+        const PANTRY_URL = `https://getpantry.cloud/apiv1/pantry/${PANTRY_ID}/basket/${BASKET_NAME}`;
 
-        // APP CONFIG & INITIALIZATION
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'leila-hge-guide-val';
-        
-        // SHARED JSONBLOB ID FOR LIVE PERSISTENCE
-        let JSONBLOB_ID = '1347076329712615424';
-
-        let db = null;
-        let auth = null;
-        let currentUser = null;
         let checkedState = {};
-        let notesState = [];
+        let notesState = [
+            { id: 'note_default', author: 'Vernon', text: 'So proud of you, my Cum Laude! Let\'s track your eligibility here 🌷', timestamp: 'Today' }
+        ];
 
         // DEFAULT CHECKLIST ITEMS DATA ARCHITECTURE
         const DEFAULT_CHECKLIST = [
@@ -447,92 +443,32 @@
             try {
                 const savedNotes = localStorage.getItem('val_leila_notes_backup');
                 if (savedNotes) {
-                    notesState = JSON.parse(savedNotes) || [];
+                    const parsed = JSON.parse(savedNotes);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        notesState = parsed;
+                    }
                 }
             } catch(e) {}
         }
 
         async function initSyncEngine() {
-            // Load local cache immediately so state never resets on refresh
             loadFromLocalStorage();
             renderChecklist();
             updateProgressBar();
             renderNotes(notesState);
 
-            try {
-                if (typeof __firebase_config !== 'undefined') {
-                    const firebaseConfig = JSON.parse(__firebase_config);
-                    const app = initializeApp(firebaseConfig);
-                    auth = getAuth(app);
-                    db = getFirestore(app);
-
-                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                        await signInWithCustomToken(auth, __initial_auth_token);
-                    } else {
-                        await signInAnonymously(auth);
-                    }
-
-                    onAuthStateChanged(auth, (user) => {
-                        if (user) {
-                            currentUser = user;
-                            setupFirebaseListeners();
-                        }
-                    });
-                } else {
-                    setupPublicCloudSync();
-                }
-            } catch (err) {
-                setupPublicCloudSync();
-            }
-        }
-
-        function setupFirebaseListeners() {
-            if (!db || !currentUser) return;
-
-            const checklistDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'checklist', 'status');
-            onSnapshot(checklistDocRef, (docSnap) => {
-                if (docSnap.exists()) {
-                    checkedState = docSnap.data().items || {};
-                    localStorage.setItem('val_leila_checklist_backup', JSON.stringify(checkedState));
-                }
-                renderChecklist();
-                updateProgressBar();
-                updateSyncBadge('Cloud Sync Active', 'emerald');
-            });
-
-            const notesColRef = collection(db, 'artifacts', appId, 'public', 'data', 'love_notes');
-            onSnapshot(notesColRef, (snapshot) => {
-                const notes = [];
-                snapshot.forEach(doc => notes.push({ id: doc.id, ...doc.data() }));
-                if (notes.length > 0) {
-                    notesState = notes;
-                    localStorage.setItem('val_leila_notes_backup', JSON.stringify(notesState));
-                }
-                renderNotes(notesState);
-            });
-        }
-
-        async function setupPublicCloudSync() {
-            updateSyncBadge('Cloud Sync Active', 'emerald');
             await fetchPublicCloudData();
-            // Poll for cloaud updates every 8 seconds
-            setInterval(fetchPublicCloudData, 8000);
+            // Poll for live cloud updates every 6 seconds
+            setInterval(fetchPublicCloudData, 6000);
         }
 
         async function fetchPublicCloudData() {
-            if (!JSONBLOB_ID) {
-                updateSyncBadge('Local Auto-Save', 'amber');
-                return;
-            }
-
             try {
-                const res = await fetch(`https://jsonblob.com/api/jsonBlob/${JSONBLOB_ID}`, {
-                    headers: { 'Accept': 'application/json' }
-                });
+                const res = await fetch(PANTRY_URL);
                 if (res.ok) {
                     const data = await res.json();
                     if (data && typeof data === 'object') {
-                        if (data.checklist) {
+                        if (data.checklist && typeof data.checklist === 'object') {
                             checkedState = { ...checkedState, ...data.checklist };
                             localStorage.setItem('val_leila_checklist_backup', JSON.stringify(checkedState));
                         }
@@ -542,6 +478,8 @@
                         }
                         updateSyncBadge('Cloud Sync Active', 'emerald');
                     }
+                } else {
+                    updateSyncBadge('Saved Locally', 'amber');
                 }
             } catch (e) {
                 updateSyncBadge('Saved Locally', 'amber');
@@ -555,12 +493,9 @@
         async function saveToCloud() {
             updateSyncBadge('Saving to Cloud...', 'amber');
             try {
-                const res = await fetch(`https://jsonblob.com/api/jsonBlob/${JSONBLOB_ID}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
+                const res = await fetch(PANTRY_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ checklist: checkedState, notes: notesState })
                 });
 
@@ -576,18 +511,17 @@
 
         function updateSyncBadge(text, color) {
             const badgeText = document.getElementById('sync-status-text');
-            const badgeBox = document.getElementById('sync-status-badge');
             const syncDot = document.getElementById('sync-dot');
-            if (badgeText && badgeBox) {
+            if (badgeText && syncDot) {
                 badgeText.textContent = text;
                 if (color === 'emerald') {
-                    if (syncDot) syncDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping";
+                    syncDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping";
                     badgeText.className = "font-semibold text-emerald-700";
                 } else if (color === 'amber') {
-                    if (syncDot) syncDot.className = "w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse";
+                    syncDot.className = "w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse";
                     badgeText.className = "font-semibold text-amber-700";
                 } else if (color === 'blue') {
-                    if (syncDot) syncDot.className = "w-2.5 h-2.5 rounded-full bg-blue-500 animate-ping";
+                    syncDot.className = "w-2.5 h-2.5 rounded-full bg-blue-500 animate-ping";
                     badgeText.className = "font-semibold text-blue-700";
                 }
             }
@@ -628,17 +562,7 @@
             renderChecklist();
             updateProgressBar();
 
-            if (db && currentUser) {
-                try {
-                    const checklistDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'checklist', 'status');
-                    await setDoc(checklistDocRef, { items: checkedState }, { merge: true });
-                    updateSyncBadge('Cloud Sync Active', 'emerald');
-                } catch (e) {
-                    updateSyncBadge('Saved Locally', 'amber');
-                }
-            } else {
-                await saveToCloud();
-            }
+            await saveToCloud();
         };
 
         function renderChecklist() {
@@ -724,18 +648,7 @@
             renderNotes(notesState);
             if (textInput) textInput.value = '';
 
-            if (db && currentUser) {
-                try {
-                    const notesColRef = collection(db, 'artifacts', appId, 'public', 'data', 'love_notes');
-                    await addDoc(notesColRef, {
-                        author: author,
-                        text: text,
-                        created: serverTimestamp()
-                    });
-                } catch(e) { console.error(e); }
-            } else {
-                await saveToCloud();
-            }
+            await saveToCloud();
         };
 
         function renderNotes(notes) {
@@ -756,7 +669,7 @@
                     <div class="flex justify-between items-center mb-1">
                         <span class="font-bold text-xs text-tulip-700">🌷 ${n.author || 'Val'}</span>
                         <span class="text-[10px] text-slate-400">
-                            ${n.created ? new Date(n.created.seconds * 1000).toLocaleDateString() : (n.timestamp || 'Recent')}
+                            ${n.timestamp || 'Recent'}
                         </span>
                     </div>
                     <p class="text-sm text-slate-700 leading-relaxed">${n.text}</p>
@@ -772,6 +685,7 @@
     <script>
         function createFloatingHearts() {
             const container = document.getElementById('heart-container');
+            if (!container) return;
             const hearts = ['🌸', '🌷', '💖', '💕', '💗'];
             
             for (let i = 0; i < 15; i++) {
