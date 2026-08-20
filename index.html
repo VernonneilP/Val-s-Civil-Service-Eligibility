@@ -310,8 +310,8 @@
 
         // APP CONFIG & INITIALIZATION
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'leila-hge-guide-val';
-        const KV_CHECKLIST_URL = 'https://kvdb.io/4y3R8z7sVqB4bY4WwM5N1C/val-leila-hge-checklist-v2';
-        const KV_NOTES_URL = 'https://kvdb.io/4y3R8z7sVqB4bY4WwM5N1C/val-leila-hge-notes-v2';
+        const KV_CHECKLIST_URL = 'https://kvdb.io/4y3R8z7sVqB4bY4WwM5N1C/val-leila-hge-checklist-v4';
+        const KV_NOTES_URL = 'https://kvdb.io/4y3R8z7sVqB4bY4WwM5N1C/val-leila-hge-notes-v4';
 
         let db = null;
         let auth = null;
@@ -319,7 +319,7 @@
         let checkedState = {};
         let notesState = [];
 
-        // CHECKLIST ITEMS DATA ARCHITECTURE
+        // DEFAULT CHECKLIST ITEMS DATA ARCHITECTURE
         const DEFAULT_CHECKLIST = [
             // PART 1: DOCUMENTS
             {
@@ -430,7 +430,28 @@
             }
         ];
 
+        function loadFromLocalStorage() {
+            try {
+                const savedCheck = localStorage.getItem('val_leila_checklist_backup');
+                if (savedCheck) {
+                    checkedState = JSON.parse(savedCheck) || {};
+                }
+            } catch(e) {}
+            try {
+                const savedNotes = localStorage.getItem('val_leila_notes_backup');
+                if (savedNotes) {
+                    notesState = JSON.parse(savedNotes) || [];
+                }
+            } catch(e) {}
+        }
+
         async function initSyncEngine() {
+            // Load local cache immediately so state never resets on refresh
+            loadFromLocalStorage();
+            renderChecklist();
+            updateProgressBar();
+            renderNotes(notesState);
+
             try {
                 if (typeof __firebase_config !== 'undefined') {
                     const firebaseConfig = JSON.parse(__firebase_config);
@@ -454,12 +475,10 @@
                     setupPublicCloudSync();
                 }
             } catch (err) {
-                console.warn("Firebase not available, using Public Cloud Storage:", err);
                 setupPublicCloudSync();
             }
         }
 
-        // Firebase Sync Option
         function setupFirebaseListeners() {
             if (!db || !currentUser) return;
 
@@ -467,6 +486,7 @@
             onSnapshot(checklistDocRef, (docSnap) => {
                 if (docSnap.exists()) {
                     checkedState = docSnap.data().items || {};
+                    localStorage.setItem('val_leila_checklist_backup', JSON.stringify(checkedState));
                 }
                 renderChecklist();
                 updateProgressBar();
@@ -477,41 +497,53 @@
             onSnapshot(notesColRef, (snapshot) => {
                 const notes = [];
                 snapshot.forEach(doc => notes.push({ id: doc.id, ...doc.data() }));
-                renderNotes(notes);
+                if (notes.length > 0) {
+                    notesState = notes;
+                    localStorage.setItem('val_leila_notes_backup', JSON.stringify(notesState));
+                }
+                renderNotes(notesState);
             });
         }
 
         async function setupPublicCloudSync() {
             updateSyncBadge('Cloud Sync Active', 'emerald');
             await fetchPublicCloudData();
-            // Poll for updates every 4 seconds so both Val and Leila see real-time updates
-            setInterval(fetchPublicCloudData, 4000);
+            // Poll for cloud updates every 5 seconds
+            setInterval(fetchPublicCloudData, 5000);
         }
 
         async function fetchPublicCloudData() {
             try {
-                // Fetch Checklist Data
                 const resCheck = await fetch(KV_CHECKLIST_URL);
                 if (resCheck.ok) {
                     const data = await resCheck.json();
-                    checkedState = data || {};
-                    localStorage.setItem('val_leila_checklist_backup', JSON.stringify(checkedState));
+                    if (data && typeof data === 'object') {
+                        checkedState = { ...checkedState, ...data };
+                        localStorage.setItem('val_leila_checklist_backup', JSON.stringify(checkedState));
+                    }
                 }
+            } catch (e) {}
 
-                // Fetch Love Notes
+            try {
                 const resNotes = await fetch(KV_NOTES_URL);
                 if (resNotes.ok) {
-                    const notes = await resNotes.json();
-                    notesState = notes || [];
-                    localStorage.setItem('val_leila_notes_backup', JSON.stringify(notesState));
+                    const cloudNotes = await resNotes.json();
+                    if (Array.isArray(cloudNotes) && cloudNotes.length > 0) {
+                        const noteMap = new Map();
+                        // Put local notes first so un-synced notes are kept
+                        notesState.forEach(n => {
+                            const key = n.id || (n.author + '_' + n.text);
+                            noteMap.set(key, n);
+                        });
+                        cloudNotes.forEach(n => {
+                            const key = n.id || (n.author + '_' + n.text);
+                            noteMap.set(key, n);
+                        });
+                        notesState = Array.from(noteMap.values());
+                        localStorage.setItem('val_leila_notes_backup', JSON.stringify(notesState));
+                    }
                 }
-            } catch (e) {
-                // Local Fallback Cache
-                try {
-                    checkedState = JSON.parse(localStorage.getItem('val_leila_checklist_backup')) || {};
-                    notesState = JSON.parse(localStorage.getItem('val_leila_notes_backup')) || [];
-                } catch(err){}
-            }
+            } catch (e) {}
 
             renderChecklist();
             updateProgressBar();
@@ -544,6 +576,9 @@
                 });
             }
 
+            // Immediately persist to local storage
+            localStorage.setItem('val_leila_checklist_backup', JSON.stringify(checkedState));
+
             renderChecklist();
             updateProgressBar();
             updateSyncBadge('Saving to Cloud...', 'amber');
@@ -553,9 +588,10 @@
                     const checklistDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'checklist', 'status');
                     await setDoc(checklistDocRef, { items: checkedState }, { merge: true });
                     updateSyncBadge('Cloud Sync Active', 'emerald');
-                } catch (e) { console.error(e); }
+                } catch (e) {
+                    updateSyncBadge('Saved Locally', 'amber');
+                }
             } else {
-                localStorage.setItem('val_leila_checklist_backup', JSON.stringify(checkedState));
                 try {
                     await fetch(KV_CHECKLIST_URL, {
                         method: 'POST',
@@ -639,6 +675,18 @@
 
             if (!text) return;
 
+            const newNote = {
+                id: 'note_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+                author: author,
+                text: text,
+                timestamp: new Date().toLocaleDateString()
+            };
+
+            notesState.unshift(newNote);
+            localStorage.setItem('val_leila_notes_backup', JSON.stringify(notesState));
+            renderNotes(notesState);
+            if (textInput) textInput.value = '';
+
             if (db && currentUser) {
                 try {
                     const notesColRef = collection(db, 'artifacts', appId, 'public', 'data', 'love_notes');
@@ -647,15 +695,8 @@
                         text: text,
                         created: serverTimestamp()
                     });
-                    textInput.value = '';
                 } catch(e) { console.error(e); }
             } else {
-                const newNote = { author, text, timestamp: new Date().toLocaleDateString() };
-                notesState.unshift(newNote);
-                renderNotes(notesState);
-                textInput.value = '';
-
-                localStorage.setItem('val_leila_notes_backup', JSON.stringify(notesState));
                 try {
                     await fetch(KV_NOTES_URL, {
                         method: 'POST',
