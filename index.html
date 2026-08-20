@@ -200,7 +200,7 @@
                 </div>
 
                 <div class="space-y-3" id="doc-checklist-container">
-                    <!-- Dynamic rendering will insert checklist items here -->
+                    <!-- Dynamic rendering inserts checklist items here -->
                 </div>
             </div>
 
@@ -216,7 +216,7 @@
                 </div>
 
                 <div class="space-y-3" id="step-checklist-container">
-                    <!-- Dynamic rendering will insert step items here -->
+                    <!-- Dynamic rendering inserts step items here -->
                 </div>
             </div>
 
@@ -311,7 +311,7 @@
 
     <script type="module">
         // =========================================================================
-        // GETPANTRY CLOUD CONFIGURATION
+        // GETPANTRY CLOUD CONFIGURATION & RATE LIMIT PROTECTION ENGINE
         // =========================================================================
         const PANTRY_ID = '3f23059e-8411-4925-90b5-2bd8cfe19f60';
         const BASKET_NAME = 'leila_roadmap';
@@ -322,131 +322,38 @@
             { id: 'note_default', author: 'Vernon', text: 'So proud of you, my Cum Laude! Let\'s track your eligibility here 🌷', timestamp: 'Today' }
         ];
 
-        // DEFAULT CHECKLIST ITEMS DATA ARCHITECTURE
-        const DEFAULT_CHECKLIST = [
-            // PART 1: DOCUMENTS
-            {
-                id: "doc_1",
-                category: "doc",
-                title: "CS Form 101-HGE (Revised July 2023)",
-                desc: "Download and fully accomplish the Honor Graduate Eligibility application form.",
-                badge: "Downloadable Form",
-                badgeColor: "bg-pink-100 text-pink-700"
-            },
-            {
-                id: "doc_2",
-                category: "doc",
-                title: "3x Passport-Size ID Photos",
-                desc: "White background, neutral expression, handwritten full name tag (Last Name, First Name, M.I.) with signature OVER printed name.",
-                badge: "Strict Specs",
-                badgeColor: "bg-rose-100 text-rose-700"
-            },
-            {
-                id: "doc_3",
-                category: "doc",
-                title: "Valid Government ID",
-                desc: "Original and 1 photocopy (PhilID, Passport, UMID, Postal ID, Driver's License, or PRC ID).",
-                badge: "Original + Copy",
-                badgeColor: "bg-amber-100 text-amber-700"
-            },
-            {
-                id: "doc_4",
-                category: "doc",
-                title: "PSA Birth Certificate",
-                desc: "Original and 1 clear photocopy issued by the Philippine Statistics Authority.",
-                badge: "PSA Official",
-                badgeColor: "bg-blue-100 text-blue-700"
-            },
-            {
-                id: "doc_5",
-                category: "doc",
-                title: "Official Transcript of Records (TOR)",
-                desc: "Original + 1 photocopy with NU MOA dry seal and registrar signature.",
-                badge: "NU MOA Registrar",
-                badgeColor: "bg-purple-100 text-purple-700"
-            },
-            {
-                id: "doc_6",
-                category: "doc",
-                title: "Certification of Latin Honor (Cum Laude)",
-                desc: "Official certification from NU MOA stating she graduated Cum Laude in BS Psych (July 2025).",
-                badge: "Latin Honor Cert",
-                badgeColor: "bg-emerald-100 text-emerald-700"
-            },
-            {
-                id: "doc_7",
-                category: "doc",
-                title: "School Master List Transmittal Confirmation",
-                desc: "Confirm with NU MOA Registrar if her batch list of honor graduates was sent to CSC NCR.",
-                badge: "School Verification",
-                badgeColor: "bg-indigo-100 text-indigo-700"
-            },
-            {
-                id: "doc_8",
-                category: "doc",
-                title: "CSC SPEL Form 1 (Affidavit of No Pending Case)",
-                desc: "Notarized affidavit certifying no pending criminal/administrative cases.",
-                badge: "Legal Affidavit",
-                badgeColor: "bg-slate-100 text-slate-700"
-            },
+        // Concurrency and Rate Limit Control
+        let isSyncing = false;
+        let debounceTimer = null;
+        let backoffUntil = 0; // Timestamp until which requests are paused if 429 occurs
 
-            // PART 2: STEPS
-            {
-                id: "step_1",
-                category: "step",
-                title: "Step 1: Secure School Documents from NU MOA",
-                desc: "Request the official TOR and Certification of Cum Laude from the Registrar. Verify masterlist transmittal.",
-                badge: "Phase 1",
-                badgeColor: "bg-teal-100 text-teal-700"
-            },
-            {
-                id: "step_2",
-                category: "step",
-                title: "Step 2: Prepare Photos and CS Form 101-HGE",
-                desc: "Fill out the form legibly. Attach the 3 photos with proper name tag and signature.",
-                badge: "Phase 2",
-                badgeColor: "bg-pink-100 text-pink-700"
-            },
-            {
-                id: "step_3",
-                category: "step",
-                title: "Step 3: Submit Folder to CSC NCR / Field Office",
-                desc: "File at CSC NCR or conduit office. Bring complete original documents and photocopies in a long folder.",
-                badge: "Phase 3",
-                badgeColor: "bg-blue-100 text-blue-700"
-            },
-            {
-                id: "step_4",
-                category: "step",
-                title: "Step 4: Pay Evaluation Fee (₱200)",
-                desc: "Pay the non-refundable evaluation fee at the CSC Cashier and keep official receipt.",
-                badge: "Fee: ₱200",
-                badgeColor: "bg-emerald-100 text-emerald-700"
-            },
-            {
-                id: "step_5",
-                category: "step",
-                title: "Step 5: Claim Certificate of Eligibility (CoE) (₱300)",
-                desc: "Once notified of approval, pay the ₱300 certificate fee and receive the official CoE!",
-                badge: "Fee: ₱300 • Final",
-                badgeColor: "bg-amber-100 text-amber-700"
-            }
+        // DEFAULT CHECKLIST DATA
+        const DEFAULT_CHECKLIST = [
+            { id: "doc_1", category: "doc", title: "CS Form 101-HGE (Revised July 2023)", desc: "Download and fully accomplish the Honor Graduate Eligibility application form.", badge: "Downloadable Form", badgeColor: "bg-pink-100 text-pink-700" },
+            { id: "doc_2", category: "doc", title: "3x Passport-Size ID Photos", desc: "White background, neutral expression, handwritten full name tag (Last Name, First Name, M.I.) with signature OVER printed name.", badge: "Strict Specs", badgeColor: "bg-rose-100 text-rose-700" },
+            { id: "doc_3", category: "doc", title: "Valid Government ID", desc: "Original and 1 photocopy (PhilID, Passport, UMID, Postal ID, Driver's License, or PRC ID).", badge: "Original + Copy", badgeColor: "bg-amber-100 text-amber-700" },
+            { id: "doc_4", category: "doc", title: "PSA Birth Certificate", desc: "Original and 1 clear photocopy issued by the Philippine Statistics Authority.", badge: "PSA Official", badgeColor: "bg-blue-100 text-blue-700" },
+            { id: "doc_5", category: "doc", title: "Official Transcript of Records (TOR)", desc: "Original + 1 photocopy with NU MOA dry seal and registrar signature.", badge: "NU MOA Registrar", badgeColor: "bg-purple-100 text-purple-700" },
+            { id: "doc_6", category: "doc", title: "Certification of Latin Honor (Cum Laude)", desc: "Official certification from NU MOA stating she graduated Cum Laude in BS Psych (July 2025).", badge: "Latin Honor Cert", badgeColor: "bg-emerald-100 text-emerald-700" },
+            { id: "doc_7", category: "doc", title: "School Master List Transmittal Confirmation", desc: "Confirm with NU MOA Registrar if her batch list of honor graduates was sent to CSC NCR.", badge: "School Verification", badgeColor: "bg-indigo-100 text-indigo-700" },
+            { id: "doc_8", category: "doc", title: "CSC SPEL Form 1 (Affidavit of No Pending Case)", desc: "Notarized affidavit certifying no pending criminal/administrative cases.", badge: "Legal Affidavit", badgeColor: "bg-slate-100 text-slate-700" },
+            { id: "step_1", category: "step", title: "Step 1: Secure School Documents from NU MOA", desc: "Request the official TOR and Certification of Cum Laude from the Registrar. Verify masterlist transmittal.", badge: "Phase 1", badgeColor: "bg-teal-100 text-teal-700" },
+            { id: "step_2", category: "step", title: "Step 2: Prepare Photos and CS Form 101-HGE", desc: "Fill out the form legibly. Attach the 3 photos with proper name tag and signature.", badge: "Phase 2", badgeColor: "bg-pink-100 text-pink-700" },
+            { id: "step_3", category: "step", title: "Step 3: Submit Folder to CSC NCR / Field Office", desc: "File at CSC NCR or conduit office. Bring complete original documents and photocopies in a long folder.", badge: "Phase 3", badgeColor: "bg-blue-100 text-blue-700" },
+            { id: "step_4", category: "step", title: "Step 4: Pay Evaluation Fee (₱200)", desc: "Pay the non-refundable evaluation fee at the CSC Cashier and keep official receipt.", badge: "Fee: ₱200", badgeColor: "bg-emerald-100 text-emerald-700" },
+            { id: "step_5", category: "step", title: "Step 5: Claim Certificate of Eligibility (CoE) (₱300)", desc: "Once notified of approval, pay the ₱300 certificate fee and receive the official CoE!", badge: "Fee: ₱300 • Final", badgeColor: "bg-amber-100 text-amber-700" }
         ];
 
         function loadFromLocalStorage() {
             try {
                 const savedCheck = localStorage.getItem('val_leila_checklist_backup');
-                if (savedCheck) {
-                    checkedState = JSON.parse(savedCheck) || {};
-                }
+                if (savedCheck) checkedState = JSON.parse(savedCheck) || {};
             } catch(e) {}
             try {
                 const savedNotes = localStorage.getItem('val_leila_notes_backup');
                 if (savedNotes) {
                     const parsed = JSON.parse(savedNotes);
-                    if (Array.isArray(parsed) && parsed.length > 0) {
-                        notesState = parsed;
-                    }
+                    if (Array.isArray(parsed) && parsed.length > 0) notesState = parsed;
                 }
             } catch(e) {}
         }
@@ -458,14 +365,28 @@
             renderNotes(notesState);
 
             await fetchPublicCloudData();
-            // Poll for live cloud updates every 6 seconds
-            setInterval(fetchPublicCloudData, 6000);
+            // Polling interval relaxed to 20 seconds to be 100% compliant with GetPantry limits
+            setInterval(fetchPublicCloudData, 20000);
         }
 
         async function fetchPublicCloudData() {
+            // Guard: Check rate-limit backoff cooldown
+            if (Date.now() < backoffUntil) {
+                updateSyncBadge('Rate Limit Cooldown...', 'amber');
+                return;
+            }
+
+            // Guard: Prevent concurrent requests
+            if (isSyncing) return;
+            isSyncing = true;
+
             try {
                 const res = await fetch(PANTRY_URL);
-                if (res.ok) {
+                if (res.status === 429) {
+                    // 429 Rate Limit hit -> set 60-second backoff
+                    backoffUntil = Date.now() + 60000;
+                    updateSyncBadge('Pantry Cooling Down (60s)', 'amber');
+                } else if (res.ok) {
                     const data = await res.json();
                     if (data && typeof data === 'object') {
                         if (data.checklist && typeof data.checklist === 'object') {
@@ -483,6 +404,8 @@
                 }
             } catch (e) {
                 updateSyncBadge('Saved Locally', 'amber');
+            } finally {
+                isSyncing = false;
             }
 
             renderChecklist();
@@ -490,8 +413,30 @@
             renderNotes(notesState);
         }
 
-        async function saveToCloud() {
-            updateSyncBadge('Saving to Cloud...', 'amber');
+        // Debounced save to ensure rapid user clicks do not spam API requests
+        function scheduleCloudSave() {
+            if (debounceTimer) clearTimeout(debounceTimer);
+            updateSyncBadge('Pending Cloud Sync...', 'blue');
+            debounceTimer = setTimeout(() => {
+                executeSaveToCloud();
+            }, 1500); // Wait 1.5 seconds after last click before calling GetPantry
+        }
+
+        async function executeSaveToCloud() {
+            if (Date.now() < backoffUntil) {
+                updateSyncBadge('Saved Locally (Rate Limit)', 'amber');
+                return;
+            }
+
+            if (isSyncing) {
+                // Retry in 1 second if another sync is currently active
+                debounceTimer = setTimeout(executeSaveToCloud, 1000);
+                return;
+            }
+
+            isSyncing = true;
+            updateSyncBadge('Saving to Cloud...', 'blue');
+
             try {
                 const res = await fetch(PANTRY_URL, {
                     method: 'POST',
@@ -499,13 +444,18 @@
                     body: JSON.stringify({ checklist: checkedState, notes: notesState })
                 });
 
-                if (res.ok) {
+                if (res.status === 429) {
+                    backoffUntil = Date.now() + 60000;
+                    updateSyncBadge('Rate Limit Cooldown (60s)', 'amber');
+                } else if (res.ok) {
                     updateSyncBadge('Cloud Sync Active', 'emerald');
                 } else {
                     updateSyncBadge('Saved Locally', 'amber');
                 }
             } catch (e) {
                 updateSyncBadge('Saved Locally', 'amber');
+            } finally {
+                isSyncing = false;
             }
         }
 
@@ -536,14 +486,14 @@
 
             setTimeout(() => {
                 if (icon) icon.classList.remove('animate-spin');
-                updateSyncBadge('Synced Just Now! ✨', 'emerald');
-                setTimeout(() => {
-                    updateSyncBadge('Cloud Sync Active', 'emerald');
-                }, 2500);
+                if (Date.now() >= backoffUntil) {
+                    updateSyncBadge('Synced Just Now! ✨', 'emerald');
+                    setTimeout(() => updateSyncBadge('Cloud Sync Active', 'emerald'), 2500);
+                }
             }, 500);
         };
 
-        window.toggleCheck = async function(id) {
+        window.toggleCheck = function(id) {
             const isChecked = !checkedState[id];
             checkedState[id] = isChecked;
 
@@ -556,13 +506,14 @@
                 });
             }
 
-            // Immediately persist to local storage
+            // Immediately persist locally
             localStorage.setItem('val_leila_checklist_backup', JSON.stringify(checkedState));
 
             renderChecklist();
             updateProgressBar();
 
-            await saveToCloud();
+            // Schedule rate-limited cloud save
+            scheduleCloudSave();
         };
 
         function renderChecklist() {
@@ -627,7 +578,7 @@
             }
         }
 
-        window.postNote = async function() {
+        window.postNote = function() {
             const authorInput = document.getElementById('note-author');
             const textInput = document.getElementById('note-text');
 
@@ -648,7 +599,7 @@
             renderNotes(notesState);
             if (textInput) textInput.value = '';
 
-            await saveToCloud();
+            scheduleCloudSave();
         };
 
         function renderNotes(notes) {
