@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For My Val - Leila's CS Honor Graduate Eligibility Guide 🌷</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        tulip: {
+                            50: '#fdf2f8',
+                            100: '#fce7f3',
+                            200: '#fbcfe8',
+                            300: '#f472b6',
+                            400: '#e879f9',
+                            500: '#ec4899',
+                            600: '#db2777',
+                            700: '#be185d',
+                            stem: '#10b981',
+                            leaf: '#059669',
+                            leafdark: '#047857'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        romantic: ['"Dancing Script"', 'cursive']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        .heart-particle {
+            position: fixed;
+            pointer-events: none;
+            z-index: 0;
+            animation: floatUp 8s linear infinite;
+            opacity: 0.6;
+        }
+
+        @keyframes floatUp {
+            0% {
+                transform: translateY(100vh) scale(0.5) rotate(0deg);
+                opacity: 0;
+            }
+            20% { opacity: 0.8; }
+            80% { opacity: 0.8; }
+            100% {
+                transform: translateY(-10vh) scale(1.2) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(251, 207, 232, 0.6);
+        }
+
+        .glass-card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-card-hover:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px -10px rgba(236, 72, 153, 0.25);
+        }
+
+        .custom-checkbox:checked + div {
+            background-color: #ec4899;
+            border-color: #ec4899;
+        }
+
+        .custom-checkbox:checked + div i {
+            display: block;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #fce7f3;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #f472b6;
+            border-radius: 9999px;
+        }
+    </style>
+</head>
+
+<body class="bg-gradient-to-br from-rose-50 via-pink-50 to-emerald-50 min-h-screen text-slate-800 font-sans relative overflow-x-hidden pb-16">
+
+    <div id="heart-container"></div>
+
+    <!-- MAIN CONTAINER -->
+    <div class="max-w-4xl mx-auto px-4 py-6 sm:py-10 relative z-10">
+
+        <header class="glass-card rounded-3xl p-6 sm:p-8 text-center shadow-xl border-pink-200 mb-8 relative overflow-hidden">
+            <!-- Decorative Tulips -->
+            <div class="absolute -top-6 -left-6 text-pink-300 opacity-30 text-7xl select-none">🌷</div>
+            <div class="absolute -bottom-6 -right-6 text-pink-300 opacity-30 text-7xl select-none">🌷</div>
+            
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-pink-100/80 text-tulip-700 font-medium text-xs sm:text-sm mb-4 shadow-sm border border-pink-200">
+                <i class="fa-solid font-bold fa-heart text-pink-500 animate-pulse"></i>
+                Special Roadmap for My Dearest Val
+            </div>
+
+            <h1 class="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight mb-2">
+                <span class="bg-gradient-to-r from-tulip-600 via-pink-500 to-rose-500 bg-clip-text text-transparent">
+                    Leila Ghez Torda
+                </span>
+            </h1>
+
+            <p class="font-romantic text-2xl sm:text-3xl text-tulip-600 font-bold mb-3">
+                BS Psychology • Cum Laude 🎓
+            </p>
+
+            <div class="flex flex-wrap justify-center items-center gap-2 text-xs sm:text-sm text-slate-600 font-medium mb-6">
+                <span class="bg-white/80 px-3 py-1 rounded-full border border-pink-200 shadow-xs flex items-center gap-1.5">
+                    <i class="fa-solid fa-graduation-cap text-tulip-500"></i> NU MOA (July 2025)
+                </span>
+                <span class="bg-white/80 px-3 py-1 rounded-full border border-pink-200 shadow-xs flex items-center gap-1.5">
+                    <i class="fa-solid fa-award text-amber-500"></i> Presidential Decree 907 (HGE)
+                </span>
+            </div>
+
+            <p class="text-slate-600 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed bg-rose-50/60 p-4 rounded-2xl border border-rose-100">
+                "Val, because you graduated <strong>Cum Laude</strong>, you are eligible for the <strong>Civil Service Honor Graduate Eligibility (PD 907)</strong>! You don't need to take the Civil Service Exam. Here is your complete guide and live shared checklist so we can track everything together!" 💖
+            </p>
+
+            <!-- Sync Indicator & Love Button -->
+            <div class="mt-6 flex flex-wrap justify-between items-center gap-3 pt-4 border-t border-pink-100 text-xs text-slate-500">
+                <div class="flex items-center gap-2" id="sync-status-badge">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
+                    <span class="font-semibold text-emerald-700" id="sync-status-text">Cloud Sync Active</span>
+                </div>
+                <button onclick="triggerHeartShower()" class="px-4 py-2 rounded-full bg-gradient-to-r from-pink-500 to-tulip-600 text-white font-semibold shadow-md hover:shadow-lg transition-all active:scale-95 flex items-center gap-2 text-xs">
+                    <i class="fa-solid fa-heart"></i> Send Val a Heart Shower!
+                </button>
+            </div>
+        </header>
+
+        <section class="glass-card rounded-2xl p-5 mb-8 shadow-md border-pink-100">
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-sm font-bold text-slate-700 flex items-center gap-2">
+                    <i class="fa-solid fa-bars-progress text-tulip-500"></i> Progress Tracker
+                </span>
+                <span id="progress-text" class="text-xs font-bold px-2.5 py-1 rounded-full bg-pink-100 text-tulip-700">
+                    0 of 13 Completed (0%)
+                </span>
+            </div>
+            <div class="w-full bg-pink-100 rounded-full h-3.5 p-0.5 overflow-hidden">
+                <div id="progress-bar" class="bg-gradient-to-r from-pink-400 via-tulip-500 to-emerald-400 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+        </section>
+
+        <div class="flex border-b border-pink-200 mb-6 space-x-2 sm:space-x-4">
+            <button onclick="switchTab('checklist-tab')" id="btn-checklist-tab" class="tab-btn active font-bold text-sm sm:text-base px-4 py-2.5 rounded-t-xl bg-white border-t-2 border-x border-pink-300 text-tulip-700 shadow-sm flex items-center gap-2">
+                <i class="fa-solid fa-list-check text-tulip-500"></i> Document Checklist & Steps
+            </button>
+            <button onclick="switchTab('guide-tab')" id="btn-guide-tab" class="tab-btn font-semibold text-sm sm:text-base px-4 py-2.5 rounded-t-xl text-slate-500 hover:text-tulip-600 transition flex items-center gap-2">
+                <i class="fa-solid fa-circle-info text-pink-400"></i> PD 907 FAQ & Tips
+            </button>
+            <button onclick="switchTab('notes-tab')" id="btn-notes-tab" class="tab-btn font-semibold text-sm sm:text-base px-4 py-2.5 rounded-t-xl text-slate-500 hover:text-tulip-600 transition flex items-center gap-2">
+                <i class="fa-solid fa-envelope-open-text text-pink-400"></i> Val's Love Notes 💌
+            </button>
+        </div>
+
+        <!-- TAB CONTENT 1: CHECKLIST & STEPS -->
+        <div id="checklist-tab" class="tab-content block space-y-8">
+            
+            <div class="glass-card rounded-3xl p-6 shadow-lg border-pink-200">
+                <div class="flex items-center gap-3 mb-4 pb-3 border-b border-pink-100">
+                    <div class="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center text-tulip-600 font-bold text-lg">
+                        <i class="fa-solid fa-folder-open"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-900">Part 1: Documentary Requirements</h2>
+                        <p class="text-xs text-slate-500">Documents to secure before heading to the Civil Service Commission (CSC)</p>
+                    </div>
+                </div>
+
+                <div class="space-y-3" id="doc-checklist-container">
+                    <!-- Dynamic rendering will insert checklist items here -->
+                </div>
+            </div>
+
+            <div class="glass-card rounded-3xl p-6 shadow-lg border-pink-200">
+                <div class="flex items-center gap-3 mb-4 pb-3 border-b border-pink-100">
+                    <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-bold text-lg">
+                        <i class="fa-solid fa-shoe-prints"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-900">Part 2: Step-by-Step Application Roadmap</h2>
+                        <p class="text-xs text-slate-500">The exact steps to get Leila's official Certificate of Eligibility (CoE)</p>
+                    </div>
+                </div>
+
+                <div class="space-y-3" id="step-checklist-container">
+                    <!-- Dynamic rendering will insert step items here -->
+                </div>
+            </div>
+
+        </div>
+
+        <div id="guide-tab" class="tab-content hidden space-y-6">
+            <div class="glass-card rounded-3xl p-6 shadow-lg border-pink-200">
+                <h2 class="text-2xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-scroll text-tulip-500"></i> Everything About PD 907 (Honor Graduate Eligibility)
+                </h2>
+
+                <div class="space-y-4 text-sm text-slate-700 leading-relaxed">
+                    <div class="p-4 bg-white rounded-2xl border border-pink-100 shadow-xs">
+                        <h3 class="font-bold text-base text-tulip-700 mb-1">What is Presidential Decree No. 907?</h3>
+                        <p>PD 907 grants <strong>Civil Service Eligibility</strong> to college graduates who completed their degrees with Latin Honors (Summa Cum Laude, Magna Cum Laude, Cum Laude) from recognized universities like National University MOA. This grants her the <strong>Career Service Professional Eligibility</strong> without having to sit for the 4-hour CSE board exam!</p>
+                    </div>
+
+                    <div class="p-4 bg-white rounded-2xl border border-pink-100 shadow-xs">
+                        <h3 class="font-bold text-base text-tulip-700 mb-1">Photo Specifications (Very Strict!)</h3>
+                        <ul class="list-disc list-inside space-y-1 text-slate-600">
+                            <li>Passport size (4.5 cm x 3.5 cm)</li>
+                            <li>White background with full face, neutral expression, and ears visible</li>
+                            <li><strong>Important:</strong> Handwritten name tag at the bottom showing: <i>Last Name, First Name, Middle Initial</i> with her <strong>signature signature OVER the printed name</strong>.</li>
+                        </ul>
+                    </div>
+
+                    <div class="p-4 bg-white rounded-2xl border border-pink-100 shadow-xs">
+                        <h3 class="font-bold text-base text-tulip-700 mb-1">Where to File the Application?</h3>
+                        <p class="mb-2">She can file at:</p>
+                        <ul class="list-disc list-inside space-y-1 text-slate-600">
+                            <li><strong>CSC Regional Office / Field Office:</strong> CSC NCR (National Capital Region) or any CSC Regional Office near your location as a conduit filing.</li>
+                            <li>Because NU MOA is under CSC NCR jurisdiction, submitting via CSC NCR or conduit office makes evaluation quick.</li>
+                        </ul>
+                    </div>
+
+                    <div class="p-4 bg-white rounded-2xl border border-pink-100 shadow-xs">
+                        <h3 class="font-bold text-base text-tulip-700 mb-1">Total Fee Breakdown</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
+                            <div class="p-3 bg-pink-50 rounded-xl text-center">
+                                <span class="block text-xs text-slate-500">Evaluation Fee (Upon filing)</span>
+                                <span class="text-xl font-bold text-tulip-700">₱200.00</span>
+                            </div>
+                            <div class="p-3 bg-emerald-50 rounded-xl text-center">
+                                <span class="block text-xs text-slate-500">Certificate Fee (Upon approval)</span>
+                                <span class="text-xl font-bold text-emerald-700">₱300.00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="notes-tab" class="tab-content hidden space-y-6">
+            <div class="glass-card rounded-3xl p-6 shadow-lg border-pink-200">
+                <div class="flex justify-between items-center mb-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+                            <i class="fa-solid fa-heart text-pink-500"></i> Val's Love Notes & Reminders
+                        </h2>
+                        <p class="text-xs text-slate-500">Leave sweet messages or extra reminders for each other here!</p>
+                    </div>
+                </div>
+
+                <!-- Note Form -->
+                <div class="bg-white p-4 rounded-2xl border border-pink-100 shadow-sm mb-6">
+                    <div class="flex gap-2 mb-2">
+                        <input type="text" id="note-author" placeholder="Your Name / Val" class="w-1/3 px-3 py-2 text-sm rounded-xl border border-pink-200 focus:outline-none focus:ring-2 focus:ring-tulip-400" value="Val">
+                        <input type="text" id="note-text" placeholder="Type a sweet message or note..." class="w-2/3 px-3 py-2 text-sm rounded-xl border border-pink-200 focus:outline-none focus:ring-2 focus:ring-tulip-400">
+                    </div>
+                    <button onclick="postNote()" class="w-full py-2.5 bg-gradient-to-r from-tulip-500 to-pink-600 text-white font-bold rounded-xl text-sm shadow-md hover:opacity-95 active:scale-98 transition flex justify-center items-center gap-2">
+                        <i class="fa-solid fa-paper-plane"></i> Post Love Note
+                    </button>
+                </div>
+
+                <!-- Notes List -->
+                <div id="notes-container" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="text-center py-6 text-slate-400 text-sm col-span-2">
+                        <i class="fa-solid fa-spinner animate-spin text-tulip-500 text-xl mb-2"></i>
+                        <p>Loading love notes...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FOOTER -->
+        <footer class="mt-12 text-center text-xs text-slate-500 space-y-1">
+            <p class="font-medium">Made with endless love and tulips for <strong>Leila Ghez Torda</strong> 🌷</p>
+            <p>National University MOA • BS Psychology Cum Laude (July 2025)</p>
+        </footer>
+
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot, collection, addDoc, serverTimestamp, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // APP CONFIG & INITIALIZATION
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'leila-hge-guide-val';
+        let db = null;
+        let auth = null;
+        let currentUser = null;
+
+        // CHECKLIST ITEMS DATA ARCHITECTURE
+        const DEFAULT_CHECKLIST = [
+            // PART 1: DOCUMENTS
+            {
+                id: "doc_1",
+                category: "doc",
+                title: "CS Form 101-HGE (Revised July 2023)",
+                desc: "Download and fully accomplish the Honor Graduate Eligibility application form.",
+                badge: "Downloadable Form",
+                badgeColor: "bg-pink-100 text-pink-700"
+            },
+            {
+                id: "doc_2",
+                category: "doc",
+                title: "3x Passport-Size ID Photos",
+                desc: "White background, neutral expression, handwritten full name tag (Last Name, First Name, M.I.) with signature OVER printed name.",
+                badge: "Strict Specs",
+                badgeColor: "bg-rose-100 text-rose-700"
+            },
+            {
+                id: "doc_3",
+                category: "doc",
+                title: "Valid Government ID",
+                desc: "Original and 1 photocopy (PhilID, Passport, UMID, Postal ID, Driver's License, or PRC ID).",
+                badge: "Original + Copy",
+                badgeColor: "bg-amber-100 text-amber-700"
+            },
+            {
+                id: "doc_4",
+                category: "doc",
+                title: "PSA Birth Certificate",
+                desc: "Original and 1 clear photocopy issued by the Philippine Statistics Authority.",
+                badge: "PSA Official",
+                badgeColor: "bg-blue-100 text-blue-700"
+            },
+            {
+                id: "doc_5",
+                category: "doc",
+                title: "Official Transcript of Records (TOR)",
+                desc: "Original + 1 photocopy with NU MOA dry seal and registrar signature.",
+                badge: "NU MOA Registrar",
+                badgeColor: "bg-purple-100 text-purple-700"
+            },
+            {
+                id: "doc_6",
+                category: "doc",
+                title: "Certification of Latin Honor (Cum Laude)",
+                desc: "Official certification from NU MOA stating she graduated Cum Laude in BS Psych (July 2025).",
+                badge: "Latin Honor Cert",
+                badgeColor: "bg-emerald-100 text-emerald-700"
+            },
+            {
+                id: "doc_7",
+                category: "doc",
+                title: "School Master List Transmittal Confirmation",
+                desc: "Confirm with NU MOA Registrar if her batch list of honor graduates was sent to CSC NCR.",
+                badge: "School Verification",
+                badgeColor: "bg-indigo-100 text-indigo-700"
+            },
+            {
+                id: "doc_8",
+                category: "doc",
+                title: "CSC SPEL Form 1 (Affidavit of No Pending Case)",
+                desc: "Notarized affidavit certifying no pending criminal/administrative cases.",
+                badge: "Legal Affidavit",
+                badgeColor: "bg-slate-100 text-slate-700"
+            },
+
+            // PART 2: STEPS
+            {
+                id: "step_1",
+                category: "step",
+                title: "Step 1: Secure School Documents from NU MOA",
+                desc: "Request the official TOR and Certification of Cum Laude from the Registrar. Verify masterlist transmittal.",
+                badge: "Phase 1",
+                badgeColor: "bg-teal-100 text-teal-700"
+            },
+            {
+                id: "step_2",
+                category: "step",
+                title: "Step 2: Prepare Photos and CS Form 101-HGE",
+                desc: "Fill out the form legibly. Attach the 3 photos with proper name tag and signature.",
+                badge: "Phase 2",
+                badgeColor: "bg-pink-100 text-pink-700"
+            },
+            {
+                id: "step_3",
+                category: "step",
+                title: "Step 3: Submit Folder to CSC NCR / Field Office",
+                desc: "File at CSC NCR or conduit office. Bring complete original documents and photocopies in a long folder.",
+                badge: "Phase 3",
+                badgeColor: "bg-blue-100 text-blue-700"
+            },
+            {
+                id: "step_4",
+                category: "step",
+                title: "Step 4: Pay Evaluation Fee (₱200)",
+                desc: "Pay the non-refundable evaluation fee at the CSC Cashier and keep official receipt.",
+                badge: "Fee: ₱200",
+                badgeColor: "bg-emerald-100 text-emerald-700"
+            },
+            {
+                id: "step_5",
+                category: "step",
+                title: "Step 5: Claim Certificate of Eligibility (CoE) (₱300)",
+                desc: "Once notified of approval, pay the ₱300 certificate fee and receive the official CoE!",
+                badge: "Fee: ₱300 • Final",
+                badgeColor: "bg-amber-100 text-amber-700"
+            }
+        ];
+
+        // State Store
+        let checkedState = {};
+
+        async function initFirebase() {
+            try {
+                if (typeof __firebase_config !== 'undefined') {
+                    const firebaseConfig = JSON.parse(__firebase_config);
+                    const app = initializeApp(firebaseConfig);
+                    auth = getAuth(app);
+                    db = getFirestore(app);
+
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+
+                    onAuthStateChanged(auth, (user) => {
+                        if (user) {
+                            currentUser = user;
+                            setupRealtimeListeners();
+                        }
+                    });
+                } else {
+                    useLocalStorageFallback();
+                }
+            } catch (err) {
+                console.warn("Firebase fallback to local storage:", err);
+                useLocalStorageFallback();
+            }
+        }
+
+        // Realtime Listeners
+        function setupRealtimeListeners() {
+            if (!db || !currentUser) return;
+
+            // 1. Checklist State Document Listener
+            const checklistDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'checklist', 'status');
+            
+            onSnapshot(checklistDocRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    checkedState = docSnap.data().items || {};
+                } else {
+                    checkedState = {};
+                }
+                renderChecklist();
+                updateProgressBar();
+            }, (err) => {
+                console.error("Checklist listener error:", err);
+            });
+
+            // 2. Love Notes Collection Listener
+            const notesColRef = collection(db, 'artifacts', appId, 'public', 'data', 'love_notes');
+            onSnapshot(notesColRef, (snapshot) => {
+                const notes = [];
+                snapshot.forEach(doc => {
+                    notes.push({ id: doc.id, ...doc.data() });
+                });
+                renderNotes(notes);
+            }, (err) => {
+                console.error("Notes listener error:", err);
+            });
+        }
+
+        // Local Storage Fallback if Firebase Config isn't injected
+        function useLocalStorageFallback() {
+            const statusBadge = document.getElementById('sync-status-badge');
+            if (statusBadge) {
+                statusBadge.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span><span class="font-semibold text-amber-700">Local Auto-Save</span>`;
+            }
+
+            const saved = localStorage.getItem('leila_checklist_state');
+            if (saved) {
+                try { checkedState = JSON.parse(saved); } catch(e){}
+            }
+            renderChecklist();
+            updateProgressBar();
+
+            // Mock local notes
+            const defaultNotes = [
+                { author: "Val", text: "Proud of you always Leila! Cum Laude! 💖🌷", timestamp: "Just now" },
+                { author: "Leila", text: "Thank you Val! Ready to get that Civil Service Certificate! ✨", timestamp: "Just now" }
+            ];
+            renderNotes(defaultNotes);
+        }
+
+        window.toggleCheck = async function(id) {
+            const isChecked = !checkedState[id];
+            checkedState[id] = isChecked;
+
+            // Visual confetti check trigger
+            if (isChecked) {
+                confetti({
+                    particleCount: 25,
+                    spread: 60,
+                    origin: { y: 0.7 },
+                    colors: ['#f472b6', '#ec4899', '#10b981']
+                });
+            }
+
+            // Save to Firestore
+            if (db && currentUser) {
+                try {
+                    const checklistDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'checklist', 'status');
+                    await setDoc(checklistDocRef, { items: checkedState }, { merge: true });
+                } catch (e) {
+                    console.error("Failed to save state to Firebase:", e);
+                }
+            } else {
+                localStorage.setItem('leila_checklist_state', JSON.stringify(checkedState));
+            }
+
+            renderChecklist();
+            updateProgressBar();
+        };
+
+        function renderChecklist() {
+            const docContainer = document.getElementById('doc-checklist-container');
+            const stepContainer = document.getElementById('step-checklist-container');
+
+            if (!docContainer || !stepContainer) return;
+
+            docContainer.innerHTML = '';
+            stepContainer.innerHTML = '';
+
+            DEFAULT_CHECKLIST.forEach(item => {
+                const isChecked = !!checkedState[item.id];
+                const html = `
+                    <div onclick="toggleCheck('${item.id}')" class="p-4 rounded-2xl bg-white border ${isChecked ? 'border-tulip-400 bg-pink-50/50' : 'border-pink-100'} glass-card-hover cursor-pointer flex items-start gap-3.5 transition-all select-none shadow-2xs">
+                        <div class="relative pt-0.5">
+                            <input type="checkbox" ${isChecked ? 'checked' : ''} class="sr-only custom-checkbox">
+                            <div class="w-6 h-6 rounded-lg border-2 border-pink-300 flex items-center justify-center transition-colors">
+                                <i class="fa-solid fa-check text-white text-xs ${isChecked ? 'block' : 'hidden'}"></i>
+                            </div>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex flex-wrap justify-between items-start gap-2">
+                                <h3 class="font-bold text-sm sm:text-base ${isChecked ? 'line-through text-slate-400' : 'text-slate-800'}">
+                                    ${item.title}
+                                </h3>
+                                <span class="text-[10px] sm:text-xs px-2.5 py-0.5 rounded-full font-bold ${item.badgeColor}">
+                                    ${item.badge}
+                                </span>
+                            </div>
+                            <p class="text-xs text-slate-500 mt-1 leading-relaxed ${isChecked ? 'text-slate-400' : ''}">
+                                ${item.desc}
+                            </p>
+                        </div>
+                    </div>
+                `;
+
+                if (item.category === 'doc') {
+                    docContainer.insertAdjacentHTML('beforeend', html);
+                } else {
+                    stepContainer.insertAdjacentHTML('beforeend', html);
+                }
+            });
+        }
+
+        function updateProgressBar() {
+            const total = DEFAULT_CHECKLIST.length;
+            const completed = DEFAULT_CHECKLIST.filter(item => !!checkedState[item.id]).length;
+            const percentage = Math.round((completed / total) * 100);
+
+            const progressBar = document.getElementById('progress-bar');
+            const progressText = document.getElementById('progress-text');
+
+            if (progressBar && progressText) {
+                progressBar.style.width = `${percentage}%`;
+                progressText.innerText = `${completed} of ${total} Completed (${percentage}%)`;
+
+                if (completed === total) {
+                    progressText.className = "text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 animate-bounce";
+                    confetti({ particleCount: 100, spread: 100, origin: { y: 0.6 } });
+                }
+            }
+        }
+
+        window.postNote = async function() {
+            const authorInput = document.getElementById('note-author');
+            const textInput = document.getElementById('note-text');
+
+            const author = authorInput?.value.trim() || "Val";
+            const text = textInput?.value.trim();
+
+            if (!text) return;
+
+            if (db && currentUser) {
+                try {
+                    const notesColRef = collection(db, 'artifacts', appId, 'public', 'data', 'love_notes');
+                    await addDoc(notesColRef, {
+                        author: author,
+                        text: text,
+                        created: serverTimestamp()
+                    });
+                    textInput.value = '';
+                } catch(e) {
+                    console.error("Error posting note:", e);
+                }
+            } else {
+                // Local fallback mode
+                const newNote = { author, text, timestamp: "Just now" };
+                const container = document.getElementById('notes-container');
+                const card = `
+                    <div class="p-4 rounded-2xl bg-gradient-to-br from-pink-50 to-rose-50 border border-pink-200 shadow-xs">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="font-bold text-xs text-tulip-700">🌷 ${author}</span>
+                            <span class="text-[10px] text-slate-400">Just now</span>
+                        </div>
+                        <p class="text-sm text-slate-700">${text}</p>
+                    </div>
+                `;
+                container.insertAdjacentHTML('afterbegin', card);
+                textInput.value = '';
+            }
+        };
+
+        // Render Notes
+        function renderNotes(notes) {
+            const container = document.getElementById('notes-container');
+            if (!container) return;
+
+            if (!notes || notes.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-6 text-slate-400 text-sm col-span-2">
+                        No notes left yet! Write a sweet message above 🌷
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = notes.map(n => `
+                <div class="p-4 rounded-2xl bg-gradient-to-br from-pink-50 to-rose-50 border border-pink-200 shadow-xs">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="font-bold text-xs text-tulip-700">🌷 ${n.author || 'Val'}</span>
+                        <span class="text-[10px] text-slate-400">
+                            ${n.created ? new Date(n.created.seconds * 1000).toLocaleDateString() : 'Recent'}
+                        </span>
+                    </div>
+                    <p class="text-sm text-slate-700 leading-relaxed">${n.text}</p>
+                </div>
+            `).join('');
+        }
+
+        // Initialize Firebase on window load
+        window.addEventListener('DOMContentLoaded', () => {
+            initFirebase();
+        });
+    </script>
+
+    <script>
+        // Floating Hearts Background Generator
+        function createFloatingHearts() {
+            const container = document.getElementById('heart-container');
+            const hearts = ['🌸', '🌷', '💖', '💕', '💗'];
+            
+            for (let i = 0; i < 15; i++) {
+                const heart = document.createElement('div');
+                heart.className = 'heart-particle';
+                heart.innerText = hearts[Math.floor(Math.random() * hearts.length)];
+                heart.style.left = `${Math.random() * 100}vw`;
+                heart.style.animationDelay = `${Math.random() * 6}s`;
+                heart.style.fontSize = `${16 + Math.random() * 20}px`;
+                container.appendChild(heart);
+            }
+        }
+
+        function triggerHeartShower() {
+            confetti({
+                particleCount: 50,
+                spread: 80,
+                origin: { y: 0.5 },
+                colors: ['#f472b6', '#ec4899', '#fce7f3', '#10b981']
+            });
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('block'));
+
+            document.getElementById(tabId).classList.remove('hidden');
+            document.getElementById(tabId).classList.add('block');
+
+            // Reset tab button styles
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.className = "tab-btn font-semibold text-sm sm:text-base px-4 py-2.5 rounded-t-xl text-slate-500 hover:text-tulip-600 transition flex items-center gap-2";
+            });
+
+            const activeBtn = document.getElementById(`btn-${tabId}`);
+            if (activeBtn) {
+                activeBtn.className = "tab-btn active font-bold text-sm sm:text-base px-4 py-2.5 rounded-t-xl bg-white border-t-2 border-x border-pink-300 text-tulip-700 shadow-sm flex items-center gap-2";
+            }
+        }
+
+        window.onload = function() {
+            createFloatingHearts();
+        };
+    </script>
+</body>
+</html>
