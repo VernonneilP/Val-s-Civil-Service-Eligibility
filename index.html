@@ -310,8 +310,9 @@
 
         // APP CONFIG & INITIALIZATION
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'leila-hge-guide-val';
-        const KV_CHECKLIST_URL = 'https://kvdb.io/4y3R8z7sVqB4bY4WwM5N1C/val-leila-hge-checklist-v4';
-        const KV_NOTES_URL = 'https://kvdb.io/4y3R8z7sVqB4bY4WwM5N1C/val-leila-hge-notes-v4';
+        
+        // PASTE YOUR FREE NPOINT BIN URL HERE (e.g., 'https://api.npoint.io/abcdef12345'):
+        const NPOINT_URL = 'https://api.npoint.io/1f99c0f44996b5459053';
 
         let db = null;
         let auth = null;
@@ -506,44 +507,41 @@
         }
 
         async function setupPublicCloudSync() {
-            updateSyncBadge('Cloud Sync Active', 'emerald');
+            if (!NPOINT_URL || NPOINT_URL === 'PASTE_YOUR_NPOINT_URL_HERE') {
+                updateSyncBadge('Local Auto-Save', 'amber');
+            } else {
+                updateSyncBadge('Cloud Sync Active', 'emerald');
+            }
             await fetchPublicCloudData();
-            // Poll for cloud updates every 5 seconds
-            setInterval(fetchPublicCloudData, 5000);
+            // Poll for cloud updates every 10 seconds
+            setInterval(fetchPublicCloudData, 10000);
         }
 
         async function fetchPublicCloudData() {
-            try {
-                const resCheck = await fetch(KV_CHECKLIST_URL);
-                if (resCheck.ok) {
-                    const data = await resCheck.json();
-                    if (data && typeof data === 'object') {
-                        checkedState = { ...checkedState, ...data };
-                        localStorage.setItem('val_leila_checklist_backup', JSON.stringify(checkedState));
-                    }
-                }
-            } catch (e) {}
+            if (!NPOINT_URL || NPOINT_URL === 'PASTE_YOUR_NPOINT_URL_HERE') {
+                updateSyncBadge('Local Auto-Save', 'amber');
+                return;
+            }
 
             try {
-                const resNotes = await fetch(KV_NOTES_URL);
-                if (resNotes.ok) {
-                    const cloudNotes = await resNotes.json();
-                    if (Array.isArray(cloudNotes) && cloudNotes.length > 0) {
-                        const noteMap = new Map();
-                        // Put local notes first so un-synced notes are kept
-                        notesState.forEach(n => {
-                            const key = n.id || (n.author + '_' + n.text);
-                            noteMap.set(key, n);
-                        });
-                        cloudNotes.forEach(n => {
-                            const key = n.id || (n.author + '_' + n.text);
-                            noteMap.set(key, n);
-                        });
-                        notesState = Array.from(noteMap.values());
-                        localStorage.setItem('val_leila_notes_backup', JSON.stringify(notesState));
+                const res = await fetch(NPOINT_URL);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && typeof data === 'object') {
+                        if (data.checklist) {
+                            checkedState = { ...checkedState, ...data.checklist };
+                            localStorage.setItem('val_leila_checklist_backup', JSON.stringify(checkedState));
+                        }
+                        if (Array.isArray(data.notes) && data.notes.length > 0) {
+                            notesState = data.notes;
+                            localStorage.setItem('val_leila_notes_backup', JSON.stringify(notesState));
+                        }
+                        updateSyncBadge('Cloud Sync Active', 'emerald');
                     }
                 }
-            } catch (e) {}
+            } catch (e) {
+                updateSyncBadge('Saved Locally', 'amber');
+            }
 
             renderChecklist();
             updateProgressBar();
@@ -581,7 +579,6 @@
 
             renderChecklist();
             updateProgressBar();
-            updateSyncBadge('Saving to Cloud...', 'amber');
 
             if (db && currentUser) {
                 try {
@@ -591,16 +588,20 @@
                 } catch (e) {
                     updateSyncBadge('Saved Locally', 'amber');
                 }
-            } else {
+            } else if (NPOINT_URL && NPOINT_URL !== 'PASTE_YOUR_NPOINT_URL_HERE') {
+                updateSyncBadge('Saving to Cloud...', 'amber');
                 try {
-                    await fetch(KV_CHECKLIST_URL, {
+                    await fetch(NPOINT_URL, {
                         method: 'POST',
-                        body: JSON.stringify(checkedState)
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ checklist: checkedState, notes: notesState })
                     });
                     updateSyncBadge('Cloud Sync Active', 'emerald');
                 } catch (e) {
                     updateSyncBadge('Saved Locally', 'amber');
                 }
+            } else {
+                updateSyncBadge('Local Auto-Save', 'amber');
             }
         };
 
@@ -696,11 +697,12 @@
                         created: serverTimestamp()
                     });
                 } catch(e) { console.error(e); }
-            } else {
+            } else if (NPOINT_URL && NPOINT_URL !== 'PASTE_YOUR_NPOINT_URL_HERE') {
                 try {
-                    await fetch(KV_NOTES_URL, {
+                    await fetch(NPOINT_URL, {
                         method: 'POST',
-                        body: JSON.stringify(notesState)
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ checklist: checkedState, notes: notesState })
                     });
                 } catch (e){}
             }
