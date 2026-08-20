@@ -147,9 +147,9 @@
                 <div class="flex items-center gap-2 flex-wrap" id="sync-status-container">
                     <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/80 border border-pink-200 shadow-xs" id="sync-status-badge">
                         <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" id="sync-dot"></span>
-                        <span class="font-semibold text-emerald-700" id="sync-status-text">Cloud Sync Active</span>
+                        <span class="font-semibold text-emerald-700" id="sync-status-text">Firebase Sync Active</span>
                     </div>
-                    <button onclick="manualSync()" id="btn-manual-sync" title="Sync with GetPantry Cloud" class="px-3 py-1.5 rounded-full bg-pink-100 text-tulip-700 hover:bg-pink-200 font-bold transition active:scale-95 flex items-center gap-1.5 shadow-xs border border-pink-200">
+                    <button onclick="manualSync()" id="btn-manual-sync" title="Sync with Firebase Cloud Database" class="px-3 py-1.5 rounded-full bg-pink-100 text-tulip-700 hover:bg-pink-200 font-bold transition active:scale-95 flex items-center gap-1.5 shadow-xs border border-pink-200">
                         <i class="fa-solid fa-arrows-rotate text-tulip-600" id="sync-icon"></i>
                         <span>Sync Now</span>
                     </button>
@@ -301,7 +301,6 @@
             </div>
         </div>
 
-        <!-- FOOTER -->
         <footer class="mt-12 text-center text-xs text-slate-500 space-y-1">
             <p class="font-medium">Made with endless love and tulips for <strong>Leila Ghez Torda</strong> 🌷</p>
             <p>National University MOA • BS Psychology Cum Laude (July 2025)</p>
@@ -310,22 +309,16 @@
     </div>
 
     <script type="module">
-        // =========================================================================
-        // GETPANTRY CLOUD CONFIGURATION & RATE LIMIT PROTECTION ENGINE
-        // =========================================================================
-        const PANTRY_ID = '3f23059e-8411-4925-90b5-2bd8cfe19f60';
-        const BASKET_NAME = 'leila_roadmap';
-        const PANTRY_URL = `https://getpantry.cloud/apiv1/pantry/${PANTRY_ID}/basket/${BASKET_NAME}`;
+        // VERIFIED FIREBASE REALTIME DATABASE ENDPOINT
+        const FIREBASE_URL = 'https://muymuy-4817f-default-rtdb.asia-southeast1.firebasedatabase.app/val_roadmap.json';
 
         let checkedState = {};
         let notesState = [
             { id: 'note_default', author: 'Vernon', text: 'So proud of you, my Cum Laude! Let\'s track your eligibility here 🌷', timestamp: 'Today' }
         ];
 
-        // Concurrency and Rate Limit Control
         let isSyncing = false;
         let debounceTimer = null;
-        let backoffUntil = 0; // Timestamp until which requests are paused if 429 occurs
 
         // DEFAULT CHECKLIST DATA
         const DEFAULT_CHECKLIST = [
@@ -344,20 +337,6 @@
             { id: "step_5", category: "step", title: "Step 5: Claim Certificate of Eligibility (CoE) (₱300)", desc: "Once notified of approval, pay the ₱300 certificate fee and receive the official CoE!", badge: "Fee: ₱300 • Final", badgeColor: "bg-amber-100 text-amber-700" }
         ];
 
-        function loadFromLocalStorage() {
-            try {
-                const savedCheck = localStorage.getItem('val_leila_checklist_backup');
-                if (savedCheck) checkedState = JSON.parse(savedCheck) || {};
-            } catch(e) {}
-            try {
-                const savedNotes = localStorage.getItem('val_leila_notes_backup');
-                if (savedNotes) {
-                    const parsed = JSON.parse(savedNotes);
-                    if (Array.isArray(parsed) && parsed.length > 0) notesState = parsed;
-                }
-            } catch(e) {}
-        }
-
         async function initSyncEngine() {
             loadFromLocalStorage();
             renderChecklist();
@@ -365,28 +344,22 @@
             renderNotes(notesState);
 
             await fetchPublicCloudData();
-            // Polling interval relaxed to 20 seconds to be 100% compliant with GetPantry limits
-            setInterval(fetchPublicCloudData, 20000);
+            
+            // Poll Firebase Realtime DB every 8 seconds for live shared updates
+            setInterval(() => {
+                if (!document.hidden) {
+                    fetchPublicCloudData();
+                }
+            }, 8000);
         }
 
         async function fetchPublicCloudData() {
-            // Guard: Check rate-limit backoff cooldown
-            if (Date.now() < backoffUntil) {
-                updateSyncBadge('Rate Limit Cooldown...', 'amber');
-                return;
-            }
-
-            // Guard: Prevent concurrent requests
-            if (isSyncing) return;
+            if (document.hidden || isSyncing) return;
             isSyncing = true;
 
             try {
-                const res = await fetch(PANTRY_URL);
-                if (res.status === 429) {
-                    // 429 Rate Limit hit -> set 60-second backoff
-                    backoffUntil = Date.now() + 60000;
-                    updateSyncBadge('Pantry Cooling Down (60s)', 'amber');
-                } else if (res.ok) {
+                const res = await fetch(FIREBASE_URL);
+                if (res.ok) {
                     const data = await res.json();
                     if (data && typeof data === 'object') {
                         if (data.checklist && typeof data.checklist === 'object') {
@@ -397,7 +370,7 @@
                             notesState = data.notes;
                             localStorage.setItem('val_leila_notes_backup', JSON.stringify(notesState));
                         }
-                        updateSyncBadge('Cloud Sync Active', 'emerald');
+                        updateSyncBadge('Firebase Sync Active', 'emerald');
                     }
                 } else {
                     updateSyncBadge('Saved Locally', 'amber');
@@ -413,42 +386,32 @@
             renderNotes(notesState);
         }
 
-        // Debounced save to ensure rapid user clicks do not spam API requests
         function scheduleCloudSave() {
             if (debounceTimer) clearTimeout(debounceTimer);
-            updateSyncBadge('Pending Cloud Sync...', 'blue');
+            updateSyncBadge('Saving to Cloud...', 'blue');
             debounceTimer = setTimeout(() => {
                 executeSaveToCloud();
-            }, 1500); // Wait 1.5 seconds after last click before calling GetPantry
+            }, 1000); // 1-second debounce
         }
 
         async function executeSaveToCloud() {
-            if (Date.now() < backoffUntil) {
-                updateSyncBadge('Saved Locally (Rate Limit)', 'amber');
-                return;
-            }
-
             if (isSyncing) {
-                // Retry in 1 second if another sync is currently active
-                debounceTimer = setTimeout(executeSaveToCloud, 1000);
+                debounceTimer = setTimeout(executeSaveToCloud, 500);
                 return;
             }
 
             isSyncing = true;
-            updateSyncBadge('Saving to Cloud...', 'blue');
+            updateSyncBadge('Saving to Firebase...', 'blue');
 
             try {
-                const res = await fetch(PANTRY_URL, {
-                    method: 'POST',
+                const res = await fetch(FIREBASE_URL, {
+                    method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ checklist: checkedState, notes: notesState })
                 });
 
-                if (res.status === 429) {
-                    backoffUntil = Date.now() + 60000;
-                    updateSyncBadge('Rate Limit Cooldown (60s)', 'amber');
-                } else if (res.ok) {
-                    updateSyncBadge('Cloud Sync Active', 'emerald');
+                if (res.ok) {
+                    updateSyncBadge('Firebase Sync Active', 'emerald');
                 } else {
                     updateSyncBadge('Saved Locally', 'amber');
                 }
@@ -457,6 +420,20 @@
             } finally {
                 isSyncing = false;
             }
+        }
+
+        function loadFromLocalStorage() {
+            try {
+                const savedCheck = localStorage.getItem('val_leila_checklist_backup');
+                if (savedCheck) checkedState = JSON.parse(savedCheck) || {};
+            } catch(e) {}
+            try {
+                const savedNotes = localStorage.getItem('val_leila_notes_backup');
+                if (savedNotes) {
+                    const parsed = JSON.parse(savedNotes);
+                    if (Array.isArray(parsed) && parsed.length > 0) notesState = parsed;
+                }
+            } catch(e) {}
         }
 
         function updateSyncBadge(text, color) {
@@ -480,16 +457,14 @@
         window.manualSync = async function() {
             const icon = document.getElementById('sync-icon');
             if (icon) icon.classList.add('animate-spin');
-            updateSyncBadge('Syncing Cloud...', 'blue');
+            updateSyncBadge('Syncing Firebase...', 'blue');
             
             await fetchPublicCloudData();
 
             setTimeout(() => {
                 if (icon) icon.classList.remove('animate-spin');
-                if (Date.now() >= backoffUntil) {
-                    updateSyncBadge('Synced Just Now! ✨', 'emerald');
-                    setTimeout(() => updateSyncBadge('Cloud Sync Active', 'emerald'), 2500);
-                }
+                updateSyncBadge('Synced Just Now! ✨', 'emerald');
+                setTimeout(() => updateSyncBadge('Firebase Sync Active', 'emerald'), 2500);
             }, 500);
         };
 
@@ -512,7 +487,7 @@
             renderChecklist();
             updateProgressBar();
 
-            // Schedule rate-limited cloud save
+            // Schedule cloud save to Firebase
             scheduleCloudSave();
         };
 
