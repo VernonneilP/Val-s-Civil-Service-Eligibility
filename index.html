@@ -507,7 +507,7 @@
         }
 
         async function setupPublicCloudSync() {
-            if (!NPOINT_URL || NPOINT_URL === 'PASTE_YOUR_NPOINT_URL_HERE') {
+            if (!NPOINT_URL || NPOINT_URL === 'https://api.npoint.io/1f99c0f44996b5459053') {
                 updateSyncBadge('Local Auto-Save', 'amber');
             } else {
                 updateSyncBadge('Cloud Sync Active', 'emerald');
@@ -518,7 +518,7 @@
         }
 
         async function fetchPublicCloudData() {
-            if (!NPOINT_URL || NPOINT_URL === 'PASTE_YOUR_NPOINT_URL_HERE') {
+            if (!NPOINT_URL || NPOINT_URL === 'https://api.npoint.io/1f99c0f44996b5459053') {
                 updateSyncBadge('Local Auto-Save', 'amber');
                 return;
             }
@@ -588,7 +588,7 @@
                 } catch (e) {
                     updateSyncBadge('Saved Locally', 'amber');
                 }
-            } else if (NPOINT_URL && NPOINT_URL !== 'PASTE_YOUR_NPOINT_URL_HERE') {
+            } else if (NPOINT_URL && NPOINT_URL !== 'https://api.npoint.io/1f99c0f44996b5459053') {
                 updateSyncBadge('Saving to Cloud...', 'amber');
                 try {
                     await fetch(NPOINT_URL, {
@@ -697,7 +697,7 @@
                         created: serverTimestamp()
                     });
                 } catch(e) { console.error(e); }
-            } else if (NPOINT_URL && NPOINT_URL !== 'PASTE_YOUR_NPOINT_URL_HERE') {
+            } else if (NPOINT_URL && NPOINT_URL !== 'https://api.npoint.io/1f99c0f44996b5459053') {
                 try {
                     await fetch(NPOINT_URL, {
                         method: 'POST',
