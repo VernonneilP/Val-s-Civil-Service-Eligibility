@@ -317,8 +317,8 @@
         // APP CONFIG & INITIALIZATION
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'leila-hge-guide-val';
         
-        // PASTE YOUR FREE NPOINT BIN URL HERE:
-        const NPOINT_URL = 'https://api.npoint.io/1f99c0f44996b5459053';
+        // SHARED JSONBLOB ID FOR LIVE PERSISTENCE
+        let JSONBLOB_ID = '1347076329712615424';
 
         let db = null;
         let auth = null;
@@ -513,24 +513,22 @@
         }
 
         async function setupPublicCloudSync() {
-            if (!NPOINT_URL || NPOINT_URL === 'PASTE_YOUR_NPOINT_URL_HERE') {
-                updateSyncBadge('Local Auto-Save', 'amber');
-            } else {
-                updateSyncBadge('Cloud Sync Active', 'emerald');
-            }
+            updateSyncBadge('Cloud Sync Active', 'emerald');
             await fetchPublicCloudData();
-            // Poll for cloud updates every 10 seconds
-            setInterval(fetchPublicCloudData, 10000);
+            // Poll for cloaud updates every 8 seconds
+            setInterval(fetchPublicCloudData, 8000);
         }
 
         async function fetchPublicCloudData() {
-            if (!NPOINT_URL || NPOINT_URL === 'PASTE_YOUR_NPOINT_URL_HERE') {
+            if (!JSONBLOB_ID) {
                 updateSyncBadge('Local Auto-Save', 'amber');
                 return;
             }
 
             try {
-                const res = await fetch(NPOINT_URL);
+                const res = await fetch(`https://jsonblob.com/api/jsonBlob/${JSONBLOB_ID}`, {
+                    headers: { 'Accept': 'application/json' }
+                });
                 if (res.ok) {
                     const data = await res.json();
                     if (data && typeof data === 'object') {
@@ -552,6 +550,28 @@
             renderChecklist();
             updateProgressBar();
             renderNotes(notesState);
+        }
+
+        async function saveToCloud() {
+            updateSyncBadge('Saving to Cloud...', 'amber');
+            try {
+                const res = await fetch(`https://jsonblob.com/api/jsonBlob/${JSONBLOB_ID}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ checklist: checkedState, notes: notesState })
+                });
+
+                if (res.ok) {
+                    updateSyncBadge('Cloud Sync Active', 'emerald');
+                } else {
+                    updateSyncBadge('Saved Locally', 'amber');
+                }
+            } catch (e) {
+                updateSyncBadge('Saved Locally', 'amber');
+            }
         }
 
         function updateSyncBadge(text, color) {
@@ -616,20 +636,8 @@
                 } catch (e) {
                     updateSyncBadge('Saved Locally', 'amber');
                 }
-            } else if (NPOINT_URL && NPOINT_URL !== 'PASTE_YOUR_NPOINT_URL_HERE') {
-                updateSyncBadge('Saving to Cloud...', 'amber');
-                try {
-                    await fetch(NPOINT_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ checklist: checkedState, notes: notesState })
-                    });
-                    updateSyncBadge('Cloud Sync Active', 'emerald');
-                } catch (e) {
-                    updateSyncBadge('Saved Locally', 'amber');
-                }
             } else {
-                updateSyncBadge('Local Auto-Save', 'amber');
+                await saveToCloud();
             }
         };
 
@@ -725,14 +733,8 @@
                         created: serverTimestamp()
                     });
                 } catch(e) { console.error(e); }
-            } else if (NPOINT_URL && NPOINT_URL !== 'PASTE_YOUR_NPOINT_URL_HERE') {
-                try {
-                    await fetch(NPOINT_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ checklist: checkedState, notes: notesState })
-                    });
-                } catch (e){}
+            } else {
+                await saveToCloud();
             }
         };
 
